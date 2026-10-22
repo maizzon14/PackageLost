@@ -39,6 +39,7 @@ public class PlayerPickUp : NetworkBehaviour
     {
         if (input != null && input.ConsumeInteract() && cogible)
         {
+            rb.GetComponent<BoxCollider>().enabled = false;
             rb.useGravity = false;
             Debug.Log("Recoger objeto");
             print($" El jugador con ID: {this.OwnerClientId} ha cogido la caja");
@@ -55,7 +56,7 @@ public class PlayerPickUp : NetworkBehaviour
         if(IsClient && box != null)
         {
             boxTransform = other.transform;
-            
+
             
             cogible = true; 
         }
