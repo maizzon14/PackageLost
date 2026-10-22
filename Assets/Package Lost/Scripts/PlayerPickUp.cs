@@ -8,6 +8,11 @@ public class PlayerPickUp : NetworkBehaviour
     //public NetworkVariable<bool> boxEnabled = new NetworkVariable<bool>(true);
     StarterAssetsInputs  input;
     bool cogible = false;
+    Transform boxTransform;
+    public Transform posBox;
+    Rigidbody rb;
+
+
     private void Awake()
     {
         input = GetComponentInParent<StarterAssetsInputs>();
@@ -34,17 +39,24 @@ public class PlayerPickUp : NetworkBehaviour
     {
         if (input != null && input.ConsumeInteract() && cogible)
         {
+            rb.useGravity = false;
             Debug.Log("Recoger objeto");
+            print($" El jugador con ID: {this.OwnerClientId} ha cogido la caja");
+            boxTransform.position = posBox.position;
+            boxTransform.SetParent(this.transform.parent);
         }
     }
 
     void OnTriggerEnter(Collider other)
     {
         NetworkObject box = other.GetComponent<NetworkObject>();
-        print(box);
+         rb = other.GetComponent<Rigidbody>();
+
         if(IsClient && box != null)
         {
-            print(box.NetworkObjectId);
+            boxTransform = other.transform;
+            
+            
             cogible = true; 
         }
 
