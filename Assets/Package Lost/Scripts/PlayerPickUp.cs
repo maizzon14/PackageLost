@@ -95,7 +95,10 @@ public class PlayerPickUp : NetworkBehaviour
             }
         }
     }
-
+    public bool HasBox()
+    {
+        return IsServer && heldBoxReference.Value.TryGet(out _);
+    }
     [ServerRpc]
     private void PickBoxServerRpc(NetworkObjectReference boxReference)
     {
@@ -163,5 +166,23 @@ public class PlayerPickUp : NetworkBehaviour
         boxRigidbody.AddForce(throwDirection * force, ForceMode.VelocityChange);
 
         heldBoxReference.Value = default;
+    }
+    
+    
+    public bool DepositHeldBoxServer()
+    {
+        if (!IsServer) return false;
+
+        if (!heldBoxReference.Value.TryGet(out NetworkObject box)) return false;
+       
+        if (!box.TryRemoveParent(true)) return false;
+
+        heldBoxReference.Value = default;
+        Rigidbody boxRigidbody = box.GetComponent<Rigidbody>();
+        BoxCollider boxCollider = box.GetComponent<BoxCollider>();
+        boxRigidbody.useGravity = true;
+        boxRigidbody.isKinematic = false;
+        boxCollider.enabled = true;
+        return true;
     }
 }
