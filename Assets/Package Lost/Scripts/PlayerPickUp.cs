@@ -35,17 +35,14 @@ public class PlayerPickUp : NetworkBehaviour
 
     private void Update()
     {
+        ApplyHeldBoxState();
+
         if (!IsOwner || input == null || !input.ConsumeInteract()) return;
 
         if (heldBoxReference.Value.TryGet(out NetworkObject caja))
         {
             print("estoy arriba");
-
             ThrowBoxServerRpc(new NetworkObjectReference(caja));
-
-            boxNetworkObject = null;
-            cogible = false;
-
             return;
         }
 
@@ -84,21 +81,7 @@ public class PlayerPickUp : NetworkBehaviour
 
     private void OnHeldBoxChanged(NetworkObjectReference previousValue, NetworkObjectReference newValue)
     {
-        if (previousValue.TryGet(out NetworkObject previousBox))
-        {
-            BoxCollider col = previousBox.GetComponent<BoxCollider>();
-
-            if (col != null)
-                col.enabled = true;
-        }
-
-        if (newValue.TryGet(out NetworkObject newBox))
-        {
-            BoxCollider col = newBox.GetComponent<BoxCollider>();
-
-            if (col != null)
-                col.enabled = false;
-        }
+        ApplyHeldBoxState();
     }
 
     private void ApplyHeldBoxState()
@@ -149,7 +132,7 @@ public class PlayerPickUp : NetworkBehaviour
 
         boxRigidbody.useGravity = false;
         boxRigidbody.isKinematic = true;
-        boxCollider.enabled = false;
+        //boxCollider.enabled = false;
 
         heldBoxReference.Value = new NetworkObjectReference(box);
         cogible = false;
