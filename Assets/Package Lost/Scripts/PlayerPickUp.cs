@@ -17,6 +17,9 @@ public class PlayerPickUp : NetworkBehaviour
     private NetworkObject boxNetworkObject;
     public Transform posBox;
 
+    Rigidbody boxRigidbody;
+    BoxCollider boxCollider;
+
     private void Awake()
     {
         input = GetComponentInParent<StarterAssetsInputs>();
@@ -89,10 +92,10 @@ public class PlayerPickUp : NetworkBehaviour
         if (heldBoxReference.Value.TryGet(out NetworkObject box))
         {
             BoxCollider boxCollider = box.GetComponent<BoxCollider>();
-            if (boxCollider != null)
+            /*if (boxCollider != null)
             {
                 boxCollider.enabled = false;
-            }
+            }*/
         }
     }
     public bool HasBox()
@@ -113,8 +116,8 @@ public class PlayerPickUp : NetworkBehaviour
             return;
         }
         
-        Rigidbody boxRigidbody = box.GetComponent<Rigidbody>();
-        BoxCollider boxCollider = box.GetComponent<BoxCollider>();
+         boxRigidbody = box.GetComponent<Rigidbody>();
+         boxCollider = box.GetComponent<BoxCollider>();
         if (boxRigidbody == null || boxCollider == null)
         {
             Debug.LogError("La caja necesita un Rigidbody y un BoxCollider.");
