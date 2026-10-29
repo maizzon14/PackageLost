@@ -112,6 +112,10 @@ public class PlayerPickUp : NetworkBehaviour
             }
         }
     }
+    public bool HasBox()
+    {
+        return IsServer && heldBoxReference.Value.TryGet(out _);
+    }
 
     [ServerRpc]
     private void PickBoxServerRpc(NetworkObjectReference boxReference)
@@ -181,4 +185,19 @@ public class PlayerPickUp : NetworkBehaviour
 
         heldBoxReference.Value = default;
     }
+
+    public bool DepositHeldBoxServer()
+    {
+        if (!IsServer) return false;
+
+        if (!heldBoxReference.Value.TryGet(out NetworkObject box)) return false;
+       
+        if (!box.TryRemoveParent(true)) return false;
+
+        heldBoxReference.Value = default;
+        box.Despawn(true);
+
+        return true;
+    }
+
 }
