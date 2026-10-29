@@ -204,6 +204,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerPickUp
   ShowTopMostFoldoutHeaderGroup: 1
+  force: 12.5
   posBox: {fileID: 7829442076679996280}
 --- !u!136 &8669456236669179491
 CapsuleCollider:
@@ -1058,7 +1059,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2509731483
+  GlobalObjectIdHash: 1049293276
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
