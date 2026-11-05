@@ -7,17 +7,19 @@ public class BasePoints : NetworkBehaviour
 	public static BasePoints Instance;
 
 	[Header("Bases en orden: Base1, Base2, Base3, Base4")]
-	[SerializeField] private NetworkObject[] bases = new NetworkObject[4];
+	
 
 	private Dictionary<ulong, int> playerBases = new Dictionary<ulong, int>();
 
 	private NetworkVariable<int>[] scores = new NetworkVariable<int>[4];
-
+	
+	 
+	
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
 
-		Debug.Log("BasePoints iniciado. IsServer: " + IsServer);
+		//Debug.Log("BasePoints iniciado. IsServer: " + IsServer);
 
 		Instance = this;
 
@@ -61,7 +63,7 @@ public class BasePoints : NetworkBehaviour
 		if (playerBases.ContainsKey(clientId))
 			return;
 
-		for (int i = 0; i < bases.Length; i++)
+		/*for (int i = 0; i < bases.Length; i++)
 		{
 			if (bases[i] == null)
 				continue;
@@ -72,12 +74,12 @@ public class BasePoints : NetworkBehaviour
 			{
 				playerBases[clientId] = i;
 
-				Debug.Log($"Cliente {clientId} asignado a Base {i + 1}");
+				//Debug.Log($"Cliente {clientId} asignado a Base {i + 1}");
 				return;
 			}
-		}
+		}*/
 
-		Debug.LogWarning($"No hay bases libres para el cliente {clientId}");
+		//Debug.LogWarning($"No hay bases libres para el cliente {clientId}");
 	}
 
 	public int GetBaseIndex(ulong clientId)

@@ -926,17 +926,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 362232244}
   m_CullTransparentMesh: 1
---- !u!114 &449937342 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 285871799275094696, guid: 158d48d8b1b5eff4a9674914152c13a3, type: 3}
-  m_PrefabInstance: {fileID: 6940153905580188388}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
 --- !u!1001 &507111784
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1930,7 +1919,7 @@ MonoBehaviour:
   m_DisconnectTimeoutMS: 30000
   ConnectionData:
     Address: 127.0.0.1
-    Port: 7778
+    Port: 7777
     WebSocketPath: /
     ServerListenAddress: 127.0.0.1
     ClientBindPort: 0
@@ -1950,7 +1939,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a2366b8aa8149bc4a91866c0d3ab3d62, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConnectionApprovalHandler
-  maxPlayers: 2
+  maxPlayers: 4
 --- !u!1001 &1221041499
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2020,17 +2009,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: f6d148d888ffbf54b9afe9936dfaec1f, type: 3}
---- !u!114 &1246504477 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4130673854371727077, guid: 7b6468d1f37d0b944b71bb508be63e78, type: 3}
-  m_PrefabInstance: {fileID: 6341106045029635261}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
 --- !u!1 &1247932801
 GameObject:
   m_ObjectHideFlags: 0
@@ -2472,17 +2450,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: b64b2a0e349dd944e9c24c0f558b979d, type: 3}
---- !u!114 &1393028979 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1228347187934814020, guid: 3e67cd26d1bc3f9408bf79f0d5f28d6e, type: 3}
-  m_PrefabInstance: {fileID: 4143240696788750506}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
 --- !u!1001 &1402827283
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2558,17 +2525,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: a1a802ecaf6775746bb2a929fb554ad8, type: 3}
---- !u!114 &1493236196 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 600487133392622898, guid: fc50bef1cbec94d40a9c569ba37c658e, type: 3}
-  m_PrefabInstance: {fileID: 5870499516261739974}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
 --- !u!1 &1594303088
 GameObject:
   m_ObjectHideFlags: 0
@@ -3023,6 +2979,7 @@ GameObject:
   - component: {fileID: 2053156487}
   - component: {fileID: 2053156486}
   - component: {fileID: 2053156488}
+  - component: {fileID: 2053156489}
   m_Layer: 0
   m_Name: Game Manager
   m_TagString: Untagged
@@ -3085,11 +3042,19 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BasePoints
   ShowTopMostFoldoutHeaderGroup: 1
-  bases:
-  - {fileID: 449937342}
-  - {fileID: 1246504477}
-  - {fileID: 1393028979}
-  - {fileID: 1493236196}
+--- !u!114 &2053156489
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2053156485}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1b9571870043c52418759c34caeb9c57, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameManager
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &148325057771891384
 GameObject:
   m_ObjectHideFlags: 0
