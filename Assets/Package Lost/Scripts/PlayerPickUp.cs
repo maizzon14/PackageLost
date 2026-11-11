@@ -1,6 +1,7 @@
 using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.InputSystem;
 
 public class PlayerPickUp : NetworkBehaviour
 {
@@ -13,14 +14,26 @@ public class PlayerPickUp : NetworkBehaviour
     private StarterAssetsInputs input;
     private bool cogible;
 
-    [SerializeField] private float force = 5f;
     private NetworkObject boxNetworkObject;
     public Transform posBox;
 
     Rigidbody boxRigidbody;
     BoxCollider boxCollider;
 
-    private void Awake()
+    public float minForce = 3f;
+    public float maxForce = 15;
+    public float maxChargeTime = 1.5f;
+    public float upwardcurve = 0.35f;
+
+    private bool charging;
+    private float chargeTime;
+    private bool waitForRelease;
+
+	[SerializeField] private LineRenderer trajectoryLine;
+	[SerializeField] private int maxPoints = 40;
+	[SerializeField] private float timeStep = 0.05f;
+	[SerializeField] private LayerMask collisionMask = ~0;
+	private void Awake()
     {
         input = GetComponentInParent<StarterAssetsInputs>();
     }
@@ -34,28 +47,97 @@ public class PlayerPickUp : NetworkBehaviour
     public override void OnNetworkDespawn()
     {
         heldBoxReference.OnValueChanged -= OnHeldBoxChanged;
+        CancelCharge();
     }
 
     private void Update()
     {
-        ApplyHeldBoxState();
+        //ApplyHeldBoxState();
 
-        if (!IsOwner || input == null || !input.ConsumeInteract()) return;
+        if (!IsOwner || input == null) return;
 
-        if (heldBoxReference.Value.TryGet(out NetworkObject caja))
+        bool pressed = input.ConsumeInteract();
+		bool held = Keyboard.current != null && Keyboard.current.eKey.isPressed;
+
+		bool isHolding = heldBoxReference.Value.TryGet(out NetworkObject caja);
+		if (isHolding) Debug.Log($"held={held} charging={charging} waitForRelease={waitForRelease}");
+		if (!isHolding)
         {
-            print("estoy arriba");
-            ThrowBoxServerRpc(new NetworkObjectReference(caja));
+           CancelCharge();
+            if (pressed && cogible && boxNetworkObject != null)
+            {
+                PickBoxServerRpc(new NetworkObjectReference(boxNetworkObject));
+                waitForRelease = true; //para que al pulsarle no se lance inmediato
+            }
             return;
         }
 
-        if (!cogible || boxNetworkObject == null) return;
+        if (waitForRelease)
+        {
+            if(!held) waitForRelease = false;
+            return;
+        }
 
-        PickBoxServerRpc(new NetworkObjectReference(boxNetworkObject));
-        
+        if (held)
+        {
+            charging = true;
+            chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
+			DrawTrajectory(GetThrowVelocity(chargeTime / maxChargeTime));
+		}
+        else if (charging)
+        {
+            float charge1 = chargeTime/maxChargeTime;
+            ThrowBoxServerRpc(new NetworkObjectReference(caja), charge1);
+
+            boxNetworkObject = null;
+            cogible = false;
+            CancelCharge();
+        }
     }
 
-    private void OnTriggerEnter(Collider other)
+    private void CancelCharge()
+    {
+        charging = false;
+        chargeTime = 0f;
+        if (trajectoryLine != null) trajectoryLine.enabled = false;
+    }
+	private Vector3 GetThrowVelocity(float charge1)
+	{
+        float force = Mathf.Lerp(minForce, maxForce, Mathf.Clamp01(charge1));
+		Vector3 dir = (transform.parent.forward + Vector3.up * upwardcurve).normalized;
+		return dir * force;
+	}
+
+	private void DrawTrajectory(Vector3 velocity)
+	{
+		if (trajectoryLine == null) return;
+
+		trajectoryLine.enabled = true;
+
+		Vector3 pos = posBox.position;
+		int count = 0;
+		trajectoryLine.positionCount = maxPoints;
+		trajectoryLine.SetPosition(count++, pos);
+
+		for (int i = 1; i < maxPoints; i++)
+		{
+			Vector3 next = pos + velocity * timeStep;
+			velocity += Physics.gravity * timeStep;
+
+			if (Physics.Linecast(pos, next, out RaycastHit hit, collisionMask,
+								 QueryTriggerInteraction.Ignore))
+			{
+				trajectoryLine.SetPosition(count++, hit.point);
+				break;
+			}
+
+			trajectoryLine.SetPosition(count++, next);
+			pos = next;
+		}
+
+		trajectoryLine.positionCount = count;
+	}
+	private void OnTriggerEnter(Collider other)
     {
         if (!IsOwner || !other.CompareTag("Box"))
         {
@@ -142,9 +224,10 @@ public class PlayerPickUp : NetworkBehaviour
     }
 
     [ServerRpc]
-    private void ThrowBoxServerRpc(NetworkObjectReference boxReference)
+    private void ThrowBoxServerRpc(NetworkObjectReference boxReference, float charge1)
     {
-        if (!boxReference.TryGet(out NetworkObject box))
+		Debug.Log("ThrowBoxServerRpc llamado, charge: " + charge1);
+		if (!boxReference.TryGet(out NetworkObject box))
         {
             Debug.LogWarning("No se pudo encontrar la caja de red.");
             return;
@@ -165,8 +248,7 @@ public class PlayerPickUp : NetworkBehaviour
         boxRigidbody.isKinematic = false;
         boxCollider.enabled = true;
 
-        Vector3 throwDirection = transform.parent.forward;
-        boxRigidbody.AddForce(throwDirection * force, ForceMode.VelocityChange);
+        boxRigidbody.AddForce(GetThrowVelocity(charge1), ForceMode.VelocityChange);
 
         heldBoxReference.Value = default;
     }
