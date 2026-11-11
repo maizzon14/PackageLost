@@ -97,7 +97,7 @@ public class PlayerPickUp : NetworkBehaviour
             BoxCollider col = newBox.GetComponent<BoxCollider>();
 
             if (col != null)
-                col.enabled = false;
+                col.enabled = true;
         }
     }
 
@@ -108,7 +108,7 @@ public class PlayerPickUp : NetworkBehaviour
             BoxCollider boxCollider = box.GetComponent<BoxCollider>();
             if (boxCollider != null)
             {
-                boxCollider.enabled = false;
+                boxCollider.enabled = true;
             }
         }
     }
@@ -145,7 +145,7 @@ public class PlayerPickUp : NetworkBehaviour
 
         boxRigidbody.useGravity = false;
         boxRigidbody.isKinematic = true;
-        boxCollider.enabled = false;
+        boxCollider.enabled = true;
 
         heldBoxReference.Value = new NetworkObjectReference(box);
         cogible = false;

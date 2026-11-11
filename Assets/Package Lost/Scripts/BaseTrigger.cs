@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using Unity.Netcode;
 
@@ -19,6 +20,23 @@ public class BaseTrigger : NetworkBehaviour
 			return;
 		}
 
-		BasePoints.Instance.AddPoint(baseIndex);
+		BasePoints.Instance.AddPoint(baseIndex,1);
+	}
+
+	private void OnTriggerExit(Collider other)
+	{
+		if (!IsServer)
+			return;
+
+		if (!other.CompareTag("Box"))
+			return;
+
+		if (BasePoints.Instance == null)
+		{
+			Debug.LogError("No se encuentra BasePoints.Instance");
+			return;
+		}
+
+		BasePoints.Instance.AddPoint(baseIndex,-1);
 	}
 }

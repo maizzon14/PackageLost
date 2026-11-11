@@ -1,127 +1,76 @@
 using UnityEngine;
 using Unity.Netcode;
-using System.Collections.Generic;
+using TMPro;
+
 
 public class BasePoints : NetworkBehaviour
 {
 	public static BasePoints Instance;
 
-	[Header("Bases en orden: Base1, Base2, Base3, Base4")]
-	
+	private NetworkList<int> scores;
 
-	private Dictionary<ulong, int> playerBases = new Dictionary<ulong, int>();
+	[SerializeField] private TMP_Text[] textos = new TMP_Text[4];
 
-	private NetworkVariable<int>[] scores = new NetworkVariable<int>[4];
-	
-	 
-	
+	private void Awake()
+	{
+			scores = new NetworkList<int>();
+	}
+
 	public override void OnNetworkSpawn()
 	{
 		base.OnNetworkSpawn();
-
-		//Debug.Log("BasePoints iniciado. IsServer: " + IsServer);
-
+		
 		Instance = this;
-
-		for (int i = 0; i < 4; i++)
-		{
-			scores[i] = new NetworkVariable<int>(
-				0,
-				NetworkVariableReadPermission.Everyone,
-				NetworkVariableWritePermission.Server
-			);
-		}
-
 		if (IsServer)
 		{
-			AssignConnectedPlayers();
-			NetworkManager.Singleton.OnClientConnectedCallback += OnClientConnected;
-			NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnected;
-		}
-	}
-
-	private void AssignConnectedPlayers()
-	{
-		foreach (ulong clientId in NetworkManager.Singleton.ConnectedClientsIds)
-		{
-			AssignBase(clientId);
-		}
-	}
-
-	private void OnClientConnected(ulong clientId)
-	{
-		AssignBase(clientId);
-	}
-
-	private void OnClientDisconnected(ulong clientId)
-	{
-		playerBases.Remove(clientId);
-	}
-
-	private void AssignBase(ulong clientId)
-	{
-		if (playerBases.ContainsKey(clientId))
-			return;
-
-		/*for (int i = 0; i < bases.Length; i++)
-		{
-			if (bases[i] == null)
-				continue;
-
-			bool occupied = playerBases.ContainsValue(i);
-
-			if (!occupied)
+			for (int i = 0; i < 4; i++)
 			{
-				playerBases[clientId] = i;
-
-				//Debug.Log($"Cliente {clientId} asignado a Base {i + 1}");
-				return;
+				scores.Add(0);
 			}
-		}*/
+		}
 
-		//Debug.LogWarning($"No hay bases libres para el cliente {clientId}");
+		for (int i = 0; i < scores.Count; i++)
+		{
+			textos[i].text = $"Base {i + 1}: {scores[i]} puntos";
+		}
+		
+		scores.OnListChanged+= OnScoresChanged;
 	}
 
-	public int GetBaseIndex(ulong clientId)
-	{
-		if (playerBases.TryGetValue(clientId, out int index))
-			return index;
 
-		return -1;
-	}
-
-	public void AddPoint(int baseIndex)
+	public void AddPoint(int baseIndex, int puntos)
 	{
 		if (!IsServer)
 			return;
-
-		if (baseIndex < 0 || baseIndex >= scores.Length)
+		
+		if (baseIndex < 0 || baseIndex >= scores.Count)
 			return;
+		
+		scores[baseIndex] = Mathf.Max(0, scores[baseIndex] + puntos);
 
-		scores[baseIndex].Value++;
+		
+	}
 
-		Debug.Log($"Base {baseIndex + 1}: {scores[baseIndex].Value} puntos");
+	private void OnScoresChanged(NetworkListEvent<int> cambio)
+	{
+		 Debug.Log($"Base {cambio.Index + 1}: {cambio.Value} puntos");
+		 textos[cambio.Index].text = $"Base {cambio.Index + 1}: {cambio.Value} puntos";
 	}
 
 	public int GetScore(int baseIndex)
 	{
-		if (baseIndex < 0 || baseIndex >= scores.Length)
+		if (baseIndex < 0 || baseIndex >= scores.Count)
 			return 0;
 
-		return scores[baseIndex].Value;
+		return scores[baseIndex];
 	}
 
 	public override void OnNetworkDespawn()
 	{
-		if (IsServer && NetworkManager.Singleton != null)
-		{
-			NetworkManager.Singleton.OnClientConnectedCallback -= OnClientConnected;
-			NetworkManager.Singleton.OnClientDisconnectCallback -= OnClientDisconnected;
-		}
-
 		if (Instance == this)
 			Instance = null;
 
 		base.OnNetworkDespawn();
+		scores.OnListChanged-= OnScoresChanged;
 	}
 }
