@@ -169,7 +169,7 @@ GameObject:
   - component: {fileID: 8838763961964152564}
   - component: {fileID: 2612796293517796879}
   - component: {fileID: 8669456236669179491}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: PickUpTrigger
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -803,7 +803,7 @@ GameObject:
   - component: {fileID: 859731000626424727}
   - component: {fileID: 7243894422663600990}
   - component: {fileID: 2722765398374716459}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: PlayerArmature_Networked
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -829,6 +829,7 @@ Transform:
   - {fileID: 8838763961964152564}
   - {fileID: 7829442076679996280}
   - {fileID: 6728041264626600709}
+  - {fileID: 3132126403978868629}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!95 &9070208544351088279
@@ -957,6 +958,7 @@ MonoBehaviour:
   sprint: 0
   interact: 0
   interactHeld: 0
+  playerHit: 0
   analogMovement: 0
   cursorLocked: 1
   cursorInputForLook: 1
@@ -1070,7 +1072,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5a57f767e5e46a458fc5d3c628d0cbb, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Unity.Netcode.Runtime::Unity.Netcode.NetworkObject
-  GlobalObjectIdHash: 2509731483
+  GlobalObjectIdHash: 1049293276
   InScenePlacedSourceGlobalObjectIdHash: 0
   m_InScenePlacedDisabledByDefault: 0
   DeferredDespawnTick: 0
@@ -2435,6 +2437,73 @@ Transform:
   - {fileID: 3361793981667953736}
   m_Father: {fileID: 735520599699095194}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &7264575034391686723
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3132126403978868629}
+  - component: {fileID: 6384633301564670547}
+  - component: {fileID: 531140803890868449}
+  m_Layer: 0
+  m_Name: HitTrigger
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3132126403978868629
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7264575034391686723}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 1, z: 0.6}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 8469557422996493275}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &6384633301564670547
+BoxCollider:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7264575034391686723}
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_LayerOverridePriority: 0
+  m_IsTrigger: 1
+  m_ProvidesContacts: 0
+  m_Enabled: 1
+  serializedVersion: 3
+  m_Size: {x: 1.4929618, y: 1, z: 1.2951028}
+  m_Center: {x: 0.0049155354, y: 0, z: 0.44523057}
+--- !u!114 &531140803890868449
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7264575034391686723}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d6e9182bae31e8646a53f1bb8c90ec9b, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerHit
+  ShowTopMostFoldoutHeaderGroup: 1
 --- !u!1 &7483631176246611624
 GameObject:
   m_ObjectHideFlags: 0
@@ -2573,7 +2642,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6728041264626600709}
   - component: {fileID: 4080677234329401212}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: TrailRender
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -2968,7 +3037,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 7829442076679996280}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: Posicion1CAJA
   m_TagString: Untagged
   m_Icon: {fileID: 0}

@@ -14,6 +14,7 @@ namespace StarterAssets
 		public bool sprint;
 		public bool interact;
 		public bool interactHeld;
+		public bool playerHit;
 		public bool IsInteractHeld => interactHeld;
 
 		[Header("Movement Settings")]
@@ -51,6 +52,11 @@ namespace StarterAssets
 		{
 			PickUpInput(value.isPressed);
 		}
+
+		public void OnPlayerHit(InputValue value)
+		{
+			PlayerHitInput(value.isPressed);
+		}
 #endif
 
 		public bool ConsumeInteract()
@@ -64,11 +70,27 @@ namespace StarterAssets
 			return true;
 		}
 
+		public bool ConsumePlayerHit()
+		{
+			if(!playerHit)
+			{
+				return false;
+			}
+
+			playerHit = false;
+			return true;
+		}
+
 		public void PickUpInput(bool newE)
 		{
 			Debug.Log("PickUpInput: " + newE);
 			interactHeld = newE;
 			if (newE) interact = true;
+		}
+
+		public void PlayerHitInput(bool click)
+		{
+			playerHit = click;
 		}
 
 		public void MoveInput(Vector2 newMoveDirection)
