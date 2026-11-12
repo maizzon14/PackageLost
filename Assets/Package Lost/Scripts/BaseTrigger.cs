@@ -14,12 +14,6 @@ public class BaseTrigger : NetworkBehaviour
 		if (!other.CompareTag("Box"))
 			return;
 
-		if (BasePoints.Instance == null)
-		{
-			Debug.LogError("No se encuentra BasePoints.Instance");
-			return;
-		}
-
 		BasePoints.Instance.AddPoint(baseIndex,1);
 	}
 
@@ -30,12 +24,6 @@ public class BaseTrigger : NetworkBehaviour
 
 		if (!other.CompareTag("Box"))
 			return;
-
-		if (BasePoints.Instance == null)
-		{
-			Debug.LogError("No se encuentra BasePoints.Instance");
-			return;
-		}
 
 		BasePoints.Instance.AddPoint(baseIndex,-1);
 	}
