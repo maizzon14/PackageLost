@@ -13,6 +13,8 @@ namespace StarterAssets
 		public bool jump;
 		public bool sprint;
 		public bool interact;
+		public bool interactHeld;
+		public bool IsInteractHeld => interactHeld;
 
 		[Header("Movement Settings")]
 		public bool analogMovement;
@@ -47,7 +49,7 @@ namespace StarterAssets
 		
 		public void OnPickUp(InputValue value)
 		{
-			interact = value.isPressed;
+			PickUpInput(value.isPressed);
 		}
 #endif
 
@@ -64,7 +66,9 @@ namespace StarterAssets
 
 		public void PickUpInput(bool newE)
 		{
-			interact = newE;
+			Debug.Log("PickUpInput: " + newE);
+			interactHeld = newE;
+			if (newE) interact = true;
 		}
 
 		public void MoveInput(Vector2 newMoveDirection)
