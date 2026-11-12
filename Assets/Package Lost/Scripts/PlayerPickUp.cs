@@ -5,11 +5,7 @@ using UnityEngine.InputSystem;
 
 public class PlayerPickUp : NetworkBehaviour
 {
-    private readonly NetworkVariable<NetworkObjectReference> heldBoxReference =
-        new NetworkVariable<NetworkObjectReference>(
-            default,
-            NetworkVariableReadPermission.Everyone,
-            NetworkVariableWritePermission.Server);
+    private readonly NetworkVariable<NetworkObjectReference> heldBoxReference = new NetworkVariable<NetworkObjectReference>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
 
     private StarterAssetsInputs input;
     private bool cogible;
@@ -29,10 +25,10 @@ public class PlayerPickUp : NetworkBehaviour
     private float chargeTime;
     private bool waitForRelease;
 
-	[SerializeField] private LineRenderer trajectoryLine;
-	[SerializeField] private int maxPoints = 40;
-	[SerializeField] private float timeStep = 0.05f;
-	[SerializeField] private LayerMask collisionMask = ~0;
+	public LineRenderer trajectoryLine;
+	public int maxPoints = 40;
+	public float timeStep = 0.05f;
+	public LayerMask collisionMask = ~0;
 	private void Awake()
     {
         input = GetComponentInParent<StarterAssetsInputs>();
@@ -99,9 +95,14 @@ public class PlayerPickUp : NetworkBehaviour
     {
         charging = false;
         chargeTime = 0f;
-        if (trajectoryLine != null) trajectoryLine.enabled = false;
-    }
-	private Vector3 GetThrowVelocity(float charge1)
+        if (trajectoryLine != null)
+        {
+			trajectoryLine.enabled = false;
+            trajectoryLine.positionCount = 0;
+		}
+
+	}
+    private Vector3 GetThrowVelocity(float charge1)
 	{
         float force = Mathf.Lerp(minForce, maxForce, Mathf.Clamp01(charge1));
 		Vector3 dir = (transform.parent.forward + Vector3.up * upwardcurve).normalized;
@@ -124,8 +125,7 @@ public class PlayerPickUp : NetworkBehaviour
 			Vector3 next = pos + velocity * timeStep;
 			velocity += Physics.gravity * timeStep;
 
-			if (Physics.Linecast(pos, next, out RaycastHit hit, collisionMask,
-								 QueryTriggerInteraction.Ignore))
+			if (Physics.Linecast(pos, next, out RaycastHit hit, collisionMask, QueryTriggerInteraction.Ignore))
 			{
 				trajectoryLine.SetPosition(count++, hit.point);
 				break;
