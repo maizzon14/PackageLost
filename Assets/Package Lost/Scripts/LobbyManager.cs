@@ -6,6 +6,8 @@ using UnityEngine.InputSystem;
 public class LobbyManager : MonoBehaviour
 {
     private const string GameSceneName = "MainScene";
+    public static LobbyManager Instance;
+    public bool started = false;
 
     void Update()
     {
@@ -22,6 +24,7 @@ public class LobbyManager : MonoBehaviour
         if (!NetworkManager.Singleton.IsServer)
         {
             Debug.LogWarning("Only the host/server can initiate the game.");
+            started = false;
             return;
         }
 
@@ -30,6 +33,7 @@ public class LobbyManager : MonoBehaviour
             GameSceneName,
             LoadSceneMode.Single
         );
+        started = true;
 
         if (status != SceneEventProgressStatus.Started)
         {
