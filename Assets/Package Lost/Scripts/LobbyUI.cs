@@ -11,11 +11,13 @@ public class LobbyUI : MonoBehaviour
     [Header ("UI")]
     [SerializeField] GameObject initButtons;
     [SerializeField] GameObject joinButtons;
+    [SerializeField] private GameObject panelCode;
     [SerializeField] Button hostButton;
     [SerializeField] Button clientButton;
     [SerializeField] Button backButton;
     [SerializeField] Button joinPartyButton;
     [SerializeField] TMP_Text hostCode;
+    [SerializeField] TMP_Text clientCode;
     private bool toggleButtons = false;
 
     void OnEnable()
@@ -38,10 +40,15 @@ public class LobbyUI : MonoBehaviour
     {
         try
         {
+            Debug.Log("Connecting to host...");
             hostButton.enabled = false;
             initButtons.SetActive(false);
+            panelCode.SetActive(true);
             int maxPlayers = NetworkManager.Singleton.GetComponent<ConnectionApprovalHandler>().maxPlayers;
-            await relayManager.StartHostWithRelay(maxPlayers, connectionType);
+            string client = await relayManager.StartHostWithRelay(maxPlayers, connectionType);
+            
+            clientCode.text = client;
+            
         }
         catch (System.Exception e)
         {
@@ -56,6 +63,7 @@ public class LobbyUI : MonoBehaviour
     {
         try
         {
+            
             clientButton.enabled = false;
             joinButtons.SetActive(false);
             string cleanCode = hostCode.text.Trim().Replace("\u200B", "");
@@ -79,6 +87,8 @@ public class LobbyUI : MonoBehaviour
     {
         toggleButtons = !toggleButtons;
         initButtons.SetActive(!toggleButtons);
+        Debug.Log(toggleButtons);
+        Debug.Log(initButtons);
         joinButtons.SetActive(toggleButtons);
         
     }
