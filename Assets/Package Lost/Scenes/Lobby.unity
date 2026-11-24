@@ -1411,6 +1411,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::ConnectionApprovalHandler
   maxPlayers: 2
+  currentPlayers: 0
 --- !u!1001 &1221041499
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1649,6 +1650,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1304881503}
   - component: {fileID: 1304881502}
+  - component: {fileID: 1304881504}
   m_Layer: 0
   m_Name: LobbyManager
   m_TagString: Untagged
@@ -1668,6 +1670,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d5b37c4a20da39b41bcb817422dddfda, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::LobbyManager
+  started: 0
 --- !u!4 &1304881503
 Transform:
   m_ObjectHideFlags: 0
@@ -1683,6 +1686,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1304881504
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1304881501}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 76fda23a774abb34192bc514c88d7ffe, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::LobbyUI
+  relayManager: {fileID: 0}
+  connectionType: wss
+  initButtons: {fileID: 0}
+  joinButtons: {fileID: 0}
+  hostButton: {fileID: 1649305231}
+  clientButton: {fileID: 891867502}
+  backButton: {fileID: 0}
+  joinPartyButton: {fileID: 0}
+  hostCode: {fileID: 0}
 --- !u!1 &1320729065
 GameObject:
   m_ObjectHideFlags: 0

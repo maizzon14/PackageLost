@@ -11,9 +11,8 @@ using Unity.Netcode;
 public class ConnectionApprovalHandler : MonoBehaviour
 {
     private NetworkManager m_NetworkManager;
-    [SerializeField]
-    private int maxPlayers = 2;
-    private int currentPlayers = 0;
+    public int maxPlayers = 2;
+    [SerializeField] private int currentPlayers = 0;
 
     private void Start()
     {
