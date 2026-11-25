@@ -2,19 +2,17 @@ using StarterAssets;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using System.Collections.Generic;
 
 public class PlayerPickUp : NetworkBehaviour
 {
-    private readonly NetworkVariable<NetworkObjectReference> heldBoxReference = new NetworkVariable<NetworkObjectReference>(default, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
-
+    private readonly List<NetworkObject> heldBoxes = new List<NetworkObject>();
+    private readonly NetworkVariable<int> heldCount = new NetworkVariable<int>(0, NetworkVariableReadPermission.Everyone, NetworkVariableWritePermission.Server);
     private StarterAssetsInputs input;
     private bool cogible;
 
     private NetworkObject boxNetworkObject;
     public Transform posBox;
-
-    Rigidbody boxRigidbody;
-    BoxCollider boxCollider;
 
     public float minForce = 3f;
     public float maxForce = 15;
@@ -25,52 +23,52 @@ public class PlayerPickUp : NetworkBehaviour
     private float chargeTime;
     private bool waitForRelease;
 
-	public LineRenderer trajectoryLine;
-	public int maxPoints = 40;
-	public float timeStep = 0.05f;
-	public LayerMask collisionMask = ~0;
-	private void Awake()
+    public LineRenderer trajectoryLine;
+    public int maxPoints = 40;
+    public float timeStep = 0.05f;
+    public LayerMask collisionMask = ~0;
+
+    public int maxHeldBoxes = 3;
+    public float boxSpacing = 0f;
+    public float boxGap = 0.1f;
+    private void Awake()
     {
         input = GetComponentInParent<StarterAssetsInputs>();
     }
 
-    public override void OnNetworkSpawn()
-    {
-        heldBoxReference.OnValueChanged += OnHeldBoxChanged;
-        ApplyHeldBoxState();
-    }
-
     public override void OnNetworkDespawn()
     {
-        heldBoxReference.OnValueChanged -= OnHeldBoxChanged;
         CancelCharge();
     }
 
     private void Update()
     {
-        //ApplyHeldBoxState();
 
         if (!IsOwner || input == null) return;
 
         bool pressed = input.ConsumeInteract();
-		bool held = Keyboard.current != null && Keyboard.current.eKey.isPressed;
+        bool held = Keyboard.current != null && Keyboard.current.eKey.isPressed;
 
-		bool isHolding = heldBoxReference.Value.TryGet(out NetworkObject caja);
-		if (isHolding) Debug.Log($"held={held} charging={charging} waitForRelease={waitForRelease}");
-		if (!isHolding)
+        bool isHolding = heldCount.Value > 0;
+        bool canPickMore = heldCount.Value < maxHeldBoxes;
+
+        if (pressed && canPickMore && boxNetworkObject != null)
         {
-           CancelCharge();
-            if (pressed && cogible && boxNetworkObject != null)
-            {
-                PickBoxServerRpc(new NetworkObjectReference(boxNetworkObject));
-                waitForRelease = true; //para que al pulsarle no se lance inmediato
-            }
+            PickBoxServerRpc(new NetworkObjectReference(boxNetworkObject));
+            waitForRelease = true; //para que al pulsarle no se lance inmediato
+            CancelCharge();
+            return;
+        }
+
+        if (!isHolding)
+        {
+            CancelCharge();
             return;
         }
 
         if (waitForRelease)
         {
-            if(!held) waitForRelease = false;
+            if (!held) waitForRelease = false;
             return;
         }
 
@@ -78,66 +76,63 @@ public class PlayerPickUp : NetworkBehaviour
         {
             charging = true;
             chargeTime = Mathf.Min(chargeTime + Time.deltaTime, maxChargeTime);
-			DrawTrajectory(GetThrowVelocity(chargeTime / maxChargeTime));
-		}
+            DrawTrajectory(GetThrowVelocity(chargeTime / maxChargeTime));
+        }
         else if (charging)
         {
-            float charge1 = chargeTime/maxChargeTime;
-            ThrowBoxServerRpc(new NetworkObjectReference(caja), charge1);
-
-            boxNetworkObject = null;
-            cogible = false;
+            float charge1 = chargeTime / maxChargeTime;
+            ThrowBoxServerRpc(charge1);
             CancelCharge();
         }
-    }
 
+    }
     private void CancelCharge()
     {
         charging = false;
         chargeTime = 0f;
         if (trajectoryLine != null)
         {
-			trajectoryLine.enabled = false;
+            trajectoryLine.enabled = false;
             trajectoryLine.positionCount = 0;
-		}
+        }
 
-	}
+    }
     private Vector3 GetThrowVelocity(float charge1)
-	{
+    {
         float force = Mathf.Lerp(minForce, maxForce, Mathf.Clamp01(charge1));
-		Vector3 dir = (transform.parent.forward + Vector3.up * upwardcurve).normalized;
-		return dir * force;
-	}
+        Vector3 dir = (transform.parent.forward + Vector3.up * upwardcurve).normalized;
+        return dir * force;
+    }
 
-	private void DrawTrajectory(Vector3 velocity)
-	{
-		if (trajectoryLine == null) return;
+    private void DrawTrajectory(Vector3 velocity)
+    {
+        if (trajectoryLine == null) return;
 
-		trajectoryLine.enabled = true;
+        trajectoryLine.enabled = true;
 
-		Vector3 pos = posBox.position;
-		int count = 0;
-		trajectoryLine.positionCount = maxPoints;
-		trajectoryLine.SetPosition(count++, pos);
+        Vector3 pos = posBox.position;
+        int count = 0;
+        trajectoryLine.positionCount = maxPoints;
+        trajectoryLine.SetPosition(count++, pos);
 
-		for (int i = 1; i < maxPoints; i++)
-		{
-			Vector3 next = pos + velocity * timeStep;
-			velocity += Physics.gravity * timeStep;
+        for (int i = 1; i < maxPoints; i++)
+        {
+            Vector3 next = pos + velocity * timeStep;
+            velocity += Physics.gravity * timeStep;
 
-			if (Physics.Linecast(pos, next, out RaycastHit hit, collisionMask, QueryTriggerInteraction.Ignore))
-			{
-				trajectoryLine.SetPosition(count++, hit.point);
-				break;
-			}
+            if (Physics.Linecast(pos, next, out RaycastHit hit, collisionMask, QueryTriggerInteraction.Ignore))
+            {
+                trajectoryLine.SetPosition(count++, hit.point);
+                break;
+            }
 
-			trajectoryLine.SetPosition(count++, next);
-			pos = next;
-		}
+            trajectoryLine.SetPosition(count++, next);
+            pos = next;
+        }
 
-		trajectoryLine.positionCount = count;
-	}
-	private void OnTriggerEnter(Collider other)
+        trajectoryLine.positionCount = count;
+    }
+    private void OnTriggerEnter(Collider other)
     {
         if (!IsOwner || !other.CompareTag("Box"))
         {
@@ -145,7 +140,7 @@ public class PlayerPickUp : NetworkBehaviour
         }
 
         NetworkObject box = other.GetComponentInParent<NetworkObject>();
-        if (box == null || !box.IsSpawned)
+        if (box == null || !box.IsSpawned || box.transform.parent != null)
         {
             return;
         }
@@ -157,33 +152,18 @@ public class PlayerPickUp : NetworkBehaviour
     private void OnTriggerExit(Collider other)
     {
         NetworkObject box = other.GetComponentInParent<NetworkObject>();
-        if (box == boxNetworkObject)
+        if (box != null && box == boxNetworkObject)
         {
             boxNetworkObject = null;
             cogible = false;
         }
     }
 
-    private void OnHeldBoxChanged(NetworkObjectReference previousValue, NetworkObjectReference newValue)
-    {
-        ApplyHeldBoxState();
-    }
-
-    private void ApplyHeldBoxState()
-    {
-        if (heldBoxReference.Value.TryGet(out NetworkObject box))
-        {
-            BoxCollider boxCollider = box.GetComponent<BoxCollider>();
-            /*if (boxCollider != null)
-            {
-                boxCollider.enabled = false;
-            }*/
-        }
-    }
     public bool HasBox()
     {
-        return IsServer && heldBoxReference.Value.TryGet(out _);
+        return IsServer && heldBoxes.Count > 0;
     }
+
     [ServerRpc]
     private void PickBoxServerRpc(NetworkObjectReference boxReference)
     {
@@ -193,14 +173,16 @@ public class PlayerPickUp : NetworkBehaviour
             return;
         }
 
-        if (heldBoxReference.Value.TryGet(out _) || box.transform.parent != null)
+        heldBoxes.RemoveAll(b => b == null);
+
+        if (heldBoxes.Count >= maxHeldBoxes || heldBoxes.Contains(box) || box.transform.parent != null)
         {
             return;
         }
-        
-         boxRigidbody = box.GetComponent<Rigidbody>();
-         boxCollider = box.GetComponent<BoxCollider>();
-        if (boxRigidbody == null || boxCollider == null)
+
+        Rigidbody rb = box.GetComponent<Rigidbody>();
+        BoxCollider col = box.GetComponent<BoxCollider>();
+        if (rb == null || col == null)
         {
             Debug.LogError("La caja necesita un Rigidbody y un BoxCollider.");
             return;
@@ -211,63 +193,76 @@ public class PlayerPickUp : NetworkBehaviour
             Debug.LogError("No se pudo asociar la caja al jugador en la red.");
             return;
         }
+        float height = (boxSpacing > 0f ? boxSpacing : col.size.y * box.transform.lossyScale.y) + boxGap;
+        Vector3 worldPos = posBox.position + Vector3.up * (height * heldBoxes.Count);
+        box.transform.SetPositionAndRotation(worldPos, posBox.rotation);
 
-        box.transform.SetLocalPositionAndRotation(posBox.localPosition,posBox.localRotation);
+        rb.useGravity = false;
+        rb.isKinematic = true;
 
-        boxRigidbody.useGravity = false;
-        boxRigidbody.isKinematic = true;
-        //boxCollider.enabled = false;
-
-        heldBoxReference.Value = new NetworkObjectReference(box);
-        cogible = false;
-        boxNetworkObject = null;
+        heldBoxes.Add(box);
+        heldCount.Value = heldBoxes.Count;
     }
 
     [ServerRpc]
-    private void ThrowBoxServerRpc(NetworkObjectReference boxReference, float charge1)
+    private void ThrowBoxServerRpc(float charge1)
     {
-		Debug.Log("ThrowBoxServerRpc llamado, charge: " + charge1);
-		if (!boxReference.TryGet(out NetworkObject box))
-        {
-            Debug.LogWarning("No se pudo encontrar la caja de red.");
-            return;
-        }
+        NetworkObject box = PopTopBox();
+        if (box == null) return;
 
-        if (!box.TryRemoveParent(true)) return;
-
-        Rigidbody boxRigidbody = box.GetComponent<Rigidbody>();
-        BoxCollider boxCollider = box.GetComponent<BoxCollider>();
-
-        if (boxRigidbody == null || boxCollider == null)
+        Rigidbody rb = box.GetComponent<Rigidbody>();
+        BoxCollider col = box.GetComponent<BoxCollider>();
+        if (rb == null || col == null)
         {
             Debug.LogError("La caja necesita un Rigidbody y un BoxCollider.");
             return;
         }
 
-        boxRigidbody.useGravity = true;
-        boxRigidbody.isKinematic = false;
-        boxCollider.enabled = true;
+        rb.useGravity = true;
+        rb.isKinematic = false;
+        col.enabled = true;
+        rb.linearVelocity = Vector3.zero;
+        rb.angularVelocity = Vector3.zero;
 
-        boxRigidbody.AddForce(GetThrowVelocity(charge1), ForceMode.VelocityChange);
-
-        heldBoxReference.Value = default;
+        rb.AddForce(GetThrowVelocity(Mathf.Clamp01(charge1)), ForceMode.VelocityChange);
     }
-    
-    
+
+
     public bool DepositHeldBoxServer()
     {
         if (!IsServer) return false;
 
-        if (!heldBoxReference.Value.TryGet(out NetworkObject box)) return false;
-       
-        if (!box.TryRemoveParent(true)) return false;
+        NetworkObject box = PopTopBox();
 
-        heldBoxReference.Value = default;
-        Rigidbody boxRigidbody = box.GetComponent<Rigidbody>();
-        BoxCollider boxCollider = box.GetComponent<BoxCollider>();
-        boxRigidbody.useGravity = true;
-        boxRigidbody.isKinematic = false;
-        boxCollider.enabled = true;
+        if (box == null) return false;
+
+
+        Rigidbody rb = box.GetComponent<Rigidbody>();
+        BoxCollider col = box.GetComponent<BoxCollider>();
+        if (rb != null)
+        {
+            rb.useGravity = true;
+            rb.isKinematic = false;
+        }
+        if(col != null) col.enabled = true;
+
         return true;
+    }
+
+    private NetworkObject PopTopBox() // Devuelve la caja superior, le quita el padre y actualiza el contador
+    { 
+        heldBoxes.RemoveAll(b => b == null);
+        if (heldBoxes.Count == 0)
+        {
+            heldCount.Value = 0;
+            return null;
+        }
+
+        NetworkObject box = heldBoxes[heldBoxes.Count - 1];
+        if (!box.TryRemoveParent(true)) return null;
+
+        heldBoxes.RemoveAt(heldBoxes.Count - 1);
+        heldCount.Value = heldBoxes.Count;
+        return box;
     }
 }
