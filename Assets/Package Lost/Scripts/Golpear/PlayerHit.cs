@@ -8,7 +8,8 @@ public class PlayerHit : NetworkBehaviour
 
     BoxCollider hitTrigger;
     private StarterAssetsInputs input;
-    private NetworkObject myPlayer;
+    private bool hitDone;
+    
 
     private void Awake()
     {
@@ -16,20 +17,23 @@ public class PlayerHit : NetworkBehaviour
         hitTrigger.enabled = false;
 
         input = GetComponentInParent<StarterAssetsInputs>();
-        myPlayer = GetComponentInParent<NetworkObject>();
     }
 
     private void Update()
     {
-        if(input.ConsumePlayerHit())
+        if (!IsOwner || input == null) return;
+
+        if (input.ConsumePlayerHit())
         {
-            Debug.Log("hola soy click");
+            //Debug.Log("hola soy click");
             StartCoroutine(Attack());
         }
     }
 
     private IEnumerator Attack()
     {
+        hitDone = false;
+
         hitTrigger.enabled = true;
 
         yield return new WaitForSeconds(0.2f);
@@ -39,23 +43,52 @@ public class PlayerHit : NetworkBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        NetworkObject player = other.GetComponentInParent<NetworkObject>();
 
-        Debug.Log("He detectado algo: " + player.OwnerClientId);
-        Debug.Log("He detectado algo: " + other.name);
-
-
-        if (!IsOwner || other.transform.root == transform.root || !other.transform.root.CompareTag("Player"))
+        if (!IsOwner || other.transform.root == transform.root || !other.transform.root.CompareTag("Player") || hitDone)
         {
             return;
         }
-        
+
+        NetworkObject player = other.transform.root.GetComponent<NetworkObject>();
 
         if (player == null)
         {
             return;
         }
 
+        PlayerPickUp playerPickUp = player.GetComponentInChildren<PlayerPickUp>();
+
+        if(playerPickUp == null)
+        {
+            return;
+        }
+
+        if(playerPickUp.HasBoxes()) 
+        {
+            DropBoxesServerRpc(player);
+            hitDone = true;
+        }
+
         print($"he hiteado al jugador: {player.OwnerClientId}");
+    }
+
+    [ServerRpc]
+
+    void DropBoxesServerRpc(NetworkObjectReference playerHit)
+    {
+        if (!playerHit.TryGet(out NetworkObject playerRpc))
+        {
+            Debug.LogWarning("No se pudo encontrar el jugador de red");
+            return;
+        }
+
+        Debug.LogWarning($"Jugador Nº{playerRpc.OwnerClientId} ha sido hitteado");
+
+        PlayerPickUp playerPickUp = playerRpc.GetComponentInChildren<PlayerPickUp>();
+
+        if (playerPickUp == null) return;
+
+        playerPickUp.DropAllBoxesServer();
+
     }
 }

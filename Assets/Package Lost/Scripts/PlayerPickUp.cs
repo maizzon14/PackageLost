@@ -164,6 +164,32 @@ public class PlayerPickUp : NetworkBehaviour
         return IsServer && heldBoxes.Count > 0;
     }
 
+    public bool HasBoxes()
+    {
+        return heldCount.Value > 0;
+    }
+
+    public void DropAllBoxesServer()
+    {
+        Debug.Log($"soy dropallboxes he llegado");
+
+        if (!IsServer) return;
+
+        NetworkObject box;
+        while ((box = PopTopBox()) != null)
+        {
+            Rigidbody rb = box.GetComponent<Rigidbody>();
+            BoxCollider col = box.GetComponent<BoxCollider>();
+
+            if (rb != null)
+            {
+                rb.useGravity = true;
+                rb.isKinematic = false;
+            }
+            if (col != null) col.enabled = true;
+        }
+    }
+
     [ServerRpc]
     private void PickBoxServerRpc(NetworkObjectReference boxReference)
     {
