@@ -181,10 +181,17 @@ public class PlayerPickUp : NetworkBehaviour
             Rigidbody rb = box.GetComponent<Rigidbody>();
             BoxCollider col = box.GetComponent<BoxCollider>();
 
+            float randomDirX = Random.Range(-5f, 6f);
+            float randomDirY = Random.Range(2f, 5f);
+            float randomDirZ = Random.Range(-5f, 6f);
+
+            Vector3 dropDir = new Vector3(randomDirX, randomDirY, randomDirZ);
+
             if (rb != null)
             {
                 rb.useGravity = true;
                 rb.isKinematic = false;
+                rb.AddForce(dropDir, ForceMode.VelocityChange);
             }
             if (col != null) col.enabled = true;
         }
