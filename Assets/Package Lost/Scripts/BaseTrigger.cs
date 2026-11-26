@@ -13,8 +13,8 @@ public class BaseTrigger : NetworkBehaviour
 
 		if (!other.CompareTag("Box"))
 			return;
-
-		BasePoints.Instance.AddPoint(baseIndex,1);
+		if(BasePoints.Instance != null)
+			BasePoints.Instance.AddPoint(baseIndex,1);
 	}
 
 	private void OnTriggerExit(Collider other)
@@ -24,7 +24,7 @@ public class BaseTrigger : NetworkBehaviour
 
 		if (!other.CompareTag("Box"))
 			return;
-
-		BasePoints.Instance.AddPoint(baseIndex,-1);
+		if (BasePoints.Instance != null)
+			BasePoints.Instance.AddPoint(baseIndex,-1);
 	}
 }
